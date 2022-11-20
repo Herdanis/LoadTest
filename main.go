@@ -13,20 +13,29 @@ import (
 
 var message string = `url: (https://example.com)
 method: (GET, PUT, POST, DELETE)
+duration: (minutes)
+request: (request per second)
 body: 
 header:
-request:
-duration: (minutes)
 `
 
 func main() {
-	if arg := os.Args; arg[1] == "testing" {
+	argLen := len(os.Args)
+	scanner := bufio.NewScanner(os.Stdin)
+	switch {
+	case argLen > 1:
+		inputUnitTest, err := os.Open("c_mainTest.txt")
+		if err != nil {
+			panic(err)
+		}
+		defer inputUnitTest.Close()
+		scanner = bufio.NewScanner(inputUnitTest)
+	default:
 		fmt.Println("Welcome to Loadtest")
 		fmt.Println(message)
-		scanner := bufio.NewScanner(os.Stdin)
-		variable := &Variable{}
-		Loadtest(variable, scanner)
 	}
+	variable := &Variable{}
+	Loadtest(variable, scanner)
 }
 
 func Loadtest(variable *Variable, scanner *bufio.Scanner) {
