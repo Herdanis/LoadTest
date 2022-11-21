@@ -11,12 +11,16 @@ import (
 	vegeta "github.com/tsenart/vegeta/lib"
 )
 
-var message string = `url: (https://example.com)
-method: (GET, PUT, POST, DELETE)
-duration: (minutes)
-request: (request per second)
+var message string = `* url: (https://example.com)
+* method: (GET, PUT, POST, DELETE)
+* duration: (minutes)
+* request: (request per second)
 body: 
 header:
+attack for execute
+use exit to quit from aplication
+
+* : is required
 `
 
 func main() {
@@ -46,17 +50,21 @@ func Loadtest(variable *Variable, scanner *bufio.Scanner) {
 		switch {
 		case arg[0] == "url" && len(arg) == 2:
 			variable.url = arg[1]
+			fmt.Println("🛠 Setup for Url:", arg[1])
 		case arg[0] == "method" && len(arg) == 2:
 			variable.method = arg[1]
+			fmt.Println("🛠 Setup for Method:", arg[1])
 		case arg[0] == "body" && len(arg) == 2:
 			b := []byte(arg[1])
 			variable.body = b
+			fmt.Println("🛠 Setup for Body:", arg[1])
 		// case arg[0] == "header" && len(arg) == 2:
 		// 	variable.header = arg[1]
 		case arg[0] == "request" && len(arg) == 2:
 			r, err := strconv.Atoi(arg[1])
 			if err == nil {
 				variable.request = r
+				fmt.Println("🛠 Setup for Request:", arg[1])
 			} else {
 				fmt.Println("is that INTEGER ??")
 			}
@@ -64,11 +72,22 @@ func Loadtest(variable *Variable, scanner *bufio.Scanner) {
 			t, err := strconv.Atoi(arg[1])
 			if err == nil {
 				variable.duration = t
+				fmt.Println("🛠 Setup for Duration:", arg[1])
 			} else {
 				fmt.Println("is that NUMBER ??")
 			}
 		case arg[0] == "attack" && len(arg) == 1:
-			atteckOperation(variable)
+			if variable.url == "" {
+				fmt.Println("Require the URL")
+			} else if variable.method == "" {
+				fmt.Println("Require the Method")
+			} else if variable.request == 0 {
+				fmt.Println("Require the Request")
+			} else if variable.duration == 0 {
+				fmt.Println("Require the Duration")
+			} else {
+				atteckOperation(variable)
+			}
 		case arg[0] == "check" && len(arg) == 1:
 			fmt.Println(*variable)
 		case arg[0] == "exit" && len(arg) == 1:
