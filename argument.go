@@ -10,10 +10,3 @@ type Variable struct {
 	request  int
 	duration int
 }
-
-// func (variable *Variable) convertToInt(value string) (int, error) {
-// 	r, err := strconv.Atoi(value)
-// 	if err == nil {
-// 		return r,
-// 	}
-// }

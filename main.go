@@ -58,6 +58,9 @@ func Loadtest(variable *Variable, scanner *bufio.Scanner) {
 			b := []byte(arg[1])
 			variable.body = b
 			fmt.Println("🛠 Setup for Body:", arg[1])
+		/**
+		 * TODO: argument for header done later
+		 */
 		// case arg[0] == "header" && len(arg) == 2:
 		// 	variable.header = arg[1]
 		case arg[0] == "request" && len(arg) == 2:
