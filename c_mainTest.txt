@@ -1,5 +1,5 @@
 url https://example.com/
 method GET
 request 10
-duration 1
-attack
+duration 10
+exit
