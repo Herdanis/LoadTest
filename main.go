@@ -24,10 +24,9 @@ use exit to quit from aplication
 `
 
 func main() {
-	argLen := len(os.Args)
 	scanner := bufio.NewScanner(os.Stdin)
 	switch {
-	case argLen > 1:
+	case os.Args[0] == "testing":
 		inputUnitTest, err := os.Open("c_mainTest.txt")
 		if err != nil {
 			panic(err)
