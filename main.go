@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"io"
 	"os"
 	"strconv"
 	"strings"
@@ -13,7 +14,7 @@ import (
 
 var message string = `* url: (https://example.com)
 * method: (GET, PUT, POST, DELETE)
-* duration: (minutes)
+* duration: (seconds)
 * request: (request per second)
 body: 
 header:
@@ -22,19 +23,18 @@ use exit to quit from aplication
 
 * : is required
 `
+var outStream io.Writer = os.Stdout
 
 func main() {
-	argLen := len(os.Args)
 	scanner := bufio.NewScanner(os.Stdin)
-	switch {
-	case argLen > 1:
+	if len(os.Args) > 1 {
 		inputUnitTest, err := os.Open("c_mainTest.txt")
 		if err != nil {
 			panic(err)
 		}
 		defer inputUnitTest.Close()
 		scanner = bufio.NewScanner(inputUnitTest)
-	default:
+	} else {
 		fmt.Println("Welcome to Loadtest")
 		fmt.Println(message)
 	}
@@ -50,14 +50,14 @@ func Loadtest(variable *Variable, scanner *bufio.Scanner) {
 		switch {
 		case arg[0] == "url" && len(arg) == 2:
 			variable.url = arg[1]
-			fmt.Println("🛠 Setup for Url:", arg[1])
+			fmt.Fprintln(outStream, "🛠 Setup for Url:", arg[1])
 		case arg[0] == "method" && len(arg) == 2:
 			variable.method = arg[1]
-			fmt.Println("🛠 Setup for Method:", arg[1])
+			fmt.Fprintln(outStream, "🛠 Setup for Method:", arg[1])
 		case arg[0] == "body" && len(arg) == 2:
 			b := []byte(arg[1])
 			variable.body = b
-			fmt.Println("🛠 Setup for Body:", arg[1])
+			fmt.Fprintln(outStream, "🛠 Setup for Body:", arg[1])
 		/**
 		 * TODO: argument for header done later
 		 */
@@ -67,32 +67,32 @@ func Loadtest(variable *Variable, scanner *bufio.Scanner) {
 			r, err := strconv.Atoi(arg[1])
 			if err == nil {
 				variable.request = r
-				fmt.Println("🛠 Setup for Request:", arg[1])
+				fmt.Fprintln(outStream, "🛠 Setup for Request:", arg[1])
 			} else {
-				fmt.Println("is that INTEGER ??")
+				fmt.Fprintln(outStream, "is that INTEGER ??")
 			}
 		case arg[0] == "duration" && len(arg) == 2:
 			t, err := strconv.Atoi(arg[1])
 			if err == nil {
 				variable.duration = t
-				fmt.Println("🛠 Setup for Duration:", arg[1])
+				fmt.Fprintln(outStream, "🛠 Setup for Duration:", arg[1])
 			} else {
-				fmt.Println("is that NUMBER ??")
+				fmt.Fprintln(outStream, "is that NUMBER ??")
 			}
 		case arg[0] == "attack" && len(arg) == 1:
 			if variable.url == "" {
-				fmt.Println("Require the URL")
+				fmt.Fprintln(outStream, "Require the URL")
 			} else if variable.method == "" {
-				fmt.Println("Require the Method")
+				fmt.Fprintln(outStream, "Require the Method")
 			} else if variable.request == 0 {
-				fmt.Println("Require the Request")
+				fmt.Fprintln(outStream, "Require the Request")
 			} else if variable.duration == 0 {
-				fmt.Println("Require the Duration")
+				fmt.Fprintln(outStream, "Require the Duration")
 			} else {
 				atteckOperation(variable)
 			}
 		case arg[0] == "check" && len(arg) == 1:
-			fmt.Println(*variable)
+			fmt.Fprintln(outStream, *variable)
 		case arg[0] == "exit" && len(arg) == 1:
 			exit = true
 		}
@@ -101,13 +101,14 @@ func Loadtest(variable *Variable, scanner *bufio.Scanner) {
 
 func atteckOperation(variable *Variable) {
 	requestRate := vegeta.Rate{Freq: variable.request, Per: time.Second}
-	duration := time.Duration(variable.duration) * time.Minute
+	duration := time.Duration(variable.duration) * time.Second
 	target := target(variable)
 	attacker := vegeta.NewAttacker()
 	var metrics vegeta.Metrics
 	for result := range attacker.Attack(target, requestRate, duration, "Loadtest") {
 		metrics.Add(result)
 	}
+	fmt.Fprintln(outStream, "Success")
 	metrics.Close()
 	reporter := vegeta.NewTextReporter(&metrics)
 	reporter(os.Stdout)
